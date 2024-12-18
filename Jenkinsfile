@@ -1,43 +1,26 @@
 pipeline {
-    agent any
-
-    environment {
-        KUBECONFIG = credentials('kubeconfig') // Use the Kubernetes credentials
+  agent any
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
     }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/adesh-commits/jenkins-task.git'
-            }
+    stage('Deploy to Kubernetes') {
+      steps {
+        script {
+          sh 'kubectl apply -f k8s-manifests/deployment.yaml'
+          sh 'kubectl apply -f k8s-manifests/service.yaml'
         }
-        
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    sh 'kubectl apply -f deployment.yaml'
-                    sh 'kubectl apply -f service.yaml'
-                }
-            }
-        }
-
-        stage('Test Application') {
-            steps {
-                script {
-                    sh 'kubectl get pods'
-                    sh 'kubectl get svc'
-                }
-                echo "Navigate to http://localhost:85 to test the app"
-            }
-        }
+      }
     }
-
-    post {
-        always {
-            echo "Pipeline completed!"
+    stage('Test Application') {
+      steps {
+        script {
+          sh 'kubectl get pods'
+          sh 'curl -f http://localhost:85'
         }
-        failure {
-            echo "Pipeline failed. Check logs for details."
-        }
+      }
     }
+  }
 }
