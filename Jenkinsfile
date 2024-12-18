@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         KUBECONFIG = credentials('kubeconfig') // Use the Kubernetes credentials
-        PATH = "/usr/local/bin:$PATH" // Add kubectl to PATH
     }
 
     stages {
@@ -12,7 +11,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/adesh-commits/jenkins-task.git'
             }
         }
-
+        
         stage('Deploy to Kubernetes') {
             steps {
                 script {
